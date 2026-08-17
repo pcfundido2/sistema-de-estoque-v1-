@@ -1,0 +1,1601 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Estoque - Depósito</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f4f6fb;
+            padding: 24px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* ===== HEADER ===== */
+        header {
+            background: linear-gradient(135deg, #0f1a3d 0%, #1a2d6b 50%, #2a4a8a 100%);
+            color: #fff;
+            padding: 28px 36px;
+            border-radius: 20px;
+            margin-bottom: 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 18px;
+            box-shadow: 0 8px 32px rgba(15, 26, 61, 0.25);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 400px;
+            height: 400px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 50%;
+        }
+
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: -60%;
+            left: -10%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 50%;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            z-index: 1;
+        }
+
+        .header-left .icon-box {
+            width: 52px;
+            height: 52px;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .header-left h1 {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .header-left h1 span {
+            font-weight: 400;
+            font-size: 15px;
+            opacity: 0.7;
+            display: block;
+            letter-spacing: 0.3px;
+            margin-top: 2px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            z-index: 1;
+        }
+
+        .header-actions button {
+            padding: 10px 22px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Inter', sans-serif;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(4px);
+        }
+
+        .header-actions button:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .header-actions .btn-primary {
+            background: linear-gradient(135deg, #4CAF50, #43A047);
+            border-color: #4CAF50;
+            box-shadow: 0 4px 16px rgba(76, 175, 80, 0.35);
+        }
+
+        .header-actions .btn-primary:hover {
+            background: linear-gradient(135deg, #43A047, #388E3C);
+            box-shadow: 0 6px 24px rgba(76, 175, 80, 0.45);
+        }
+
+        .header-actions .btn-danger {
+            background: linear-gradient(135deg, #ef5350, #d32f2f);
+            border-color: #ef5350;
+        }
+
+        .header-actions .btn-danger:hover {
+            background: linear-gradient(135deg, #d32f2f, #b71c1c);
+            box-shadow: 0 6px 24px rgba(239, 83, 80, 0.4);
+        }
+
+        .header-actions .btn-export {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .header-actions .btn-print {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .header-actions .btn-backup {
+            background: rgba(255, 193, 7, 0.2);
+            border-color: rgba(255, 193, 7, 0.3);
+        }
+
+        .header-actions .btn-backup:hover {
+            background: rgba(255, 193, 7, 0.35);
+        }
+
+        .header-actions .btn-restore {
+            background: rgba(33, 150, 243, 0.2);
+            border-color: rgba(33, 150, 243, 0.3);
+        }
+
+        .header-actions .btn-restore:hover {
+            background: rgba(33, 150, 243, 0.35);
+        }
+
+        /* ===== STATS ===== */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .stat-card {
+            background: #fff;
+            padding: 20px 24px;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .stat-icon.blue { background: #e3ecfa; color: #1a2d6b; }
+        .stat-icon.green { background: #e6f7ed; color: #2e7d32; }
+        .stat-icon.red { background: #fde8e8; color: #c62828; }
+        .stat-icon.orange { background: #fef3e0; color: #e65100; }
+        .stat-icon.purple { background: #ede7f6; color: #5e35b1; }
+
+        .stat-info .number {
+            font-size: 28px;
+            font-weight: 800;
+            color: #0f1a3d;
+            line-height: 1.2;
+        }
+
+        .stat-info .label {
+            font-size: 13px;
+            color: #7a7f93;
+            font-weight: 500;
+        }
+
+        /* ===== FORM ===== */
+        .form-section {
+            background: #fff;
+            padding: 28px 32px;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            margin-bottom: 28px;
+            display: none;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            animation: slideDown 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .form-section.active {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 22px;
+        }
+
+        .form-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0f1a3d;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-header h2 i {
+            color: #1a2d6b;
+        }
+
+        .form-header .btn-close-form {
+            background: none;
+            border: none;
+            font-size: 22px;
+            color: #999;
+            cursor: pointer;
+            transition: all 0.3s;
+            padding: 4px 8px;
+            border-radius: 8px;
+        }
+
+        .form-header .btn-close-form:hover {
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #3d445e;
+        }
+
+        .form-group label i {
+            color: #1a2d6b;
+            margin-right: 4px;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 11px 16px;
+            border: 2px solid #e8ecf4;
+            border-radius: 12px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s;
+            background: #fafbfd;
+            color: #1a1a2e;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #1a2d6b;
+            outline: none;
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(26, 45, 107, 0.08);
+        }
+
+        .form-group input::placeholder {
+            color: #b0b8c9;
+        }
+
+        .form-actions {
+            margin-top: 22px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .form-actions button {
+            padding: 12px 34px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-actions .btn-save {
+            background: linear-gradient(135deg, #1a2d6b, #2a4a8a);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(26, 45, 107, 0.3);
+        }
+
+        .form-actions .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(26, 45, 107, 0.35);
+        }
+
+        .form-actions .btn-cancel {
+            background: #f1f3f8;
+            color: #4a5070;
+        }
+
+        .form-actions .btn-cancel:hover {
+            background: #e4e7ef;
+            transform: translateY(-2px);
+        }
+
+        /* ===== FILTERS ===== */
+        .filters {
+            background: #fff;
+            padding: 18px 24px;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+            margin-bottom: 24px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px 20px;
+            align-items: center;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+        }
+
+        .filters .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1 1 180px;
+        }
+
+        .filters .filter-group label {
+            font-weight: 600;
+            color: #3d445e;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        .filters .filter-group label i {
+            color: #1a2d6b;
+            margin-right: 4px;
+        }
+
+        .filters input,
+        .filters select {
+            padding: 9px 14px;
+            border: 2px solid #e8ecf4;
+            border-radius: 10px;
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+            background: #fafbfd;
+            transition: all 0.3s;
+            width: 100%;
+            color: #1a1a2e;
+        }
+
+        .filters input:focus,
+        .filters select:focus {
+            border-color: #1a2d6b;
+            outline: none;
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(26, 45, 107, 0.06);
+        }
+
+        .filters .filter-search {
+            flex: 2 1 220px;
+        }
+
+        /* ===== TABLE ===== */
+        .table-wrapper {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+            overflow-x: auto;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13.5px;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #0f1a3d, #1a2d6b);
+            color: #fff;
+        }
+
+        thead th {
+            padding: 15px 18px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            white-space: nowrap;
+        }
+
+        thead th i {
+            margin-right: 6px;
+            opacity: 0.7;
+        }
+
+        tbody td {
+            padding: 14px 18px;
+            border-bottom: 1px solid #f0f2f8;
+            vertical-align: middle;
+            color: #1a1a2e;
+        }
+
+        tbody tr {
+            transition: background 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background: #f8faff;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .categoria-badge {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            background: #eef2ff;
+            color: #1a2d6b;
+            letter-spacing: 0.3px;
+        }
+
+        .produto-nome {
+            font-weight: 600;
+            color: #0f1a3d;
+        }
+
+        .qtd-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .qtd-input {
+            width: 68px;
+            padding: 6px 10px;
+            border: 2px solid #e8ecf4;
+            border-radius: 8px;
+            font-size: 13px;
+            text-align: center;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            background: #fafbfd;
+            transition: all 0.3s;
+        }
+
+        .qtd-input:focus {
+            border-color: #1a2d6b;
+            outline: none;
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(26, 45, 107, 0.08);
+        }
+
+        .btn-update-qtd {
+            background: linear-gradient(135deg, #4CAF50, #43A047);
+            color: #fff;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .btn-update-qtd:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 16px rgba(76, 175, 80, 0.3);
+        }
+
+        .unidade-label {
+            font-size: 11px;
+            color: #8892a8;
+            font-weight: 500;
+            margin-left: 2px;
+        }
+
+        .validade-vencida {
+            color: #d32f2f;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .validade-vencida i {
+            font-size: 14px;
+        }
+
+        .validade-proxima {
+            color: #e65100;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .validade-proxima i {
+            font-size: 14px;
+        }
+
+        .validade-ok {
+            color: #2e7d32;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .validade-ok i {
+            font-size: 14px;
+        }
+
+        .validade-sem {
+            color: #8892a8;
+            font-style: italic;
+        }
+
+        .actions-cell {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn-edit {
+            background: #eef2ff;
+            color: #1a2d6b;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-edit:hover {
+            background: #dbe3ff;
+            transform: translateY(-1px);
+        }
+
+        .btn-delete {
+            background: #fde8e8;
+            color: #c62828;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-delete:hover {
+            background: #fccfcf;
+            transform: translateY(-1px);
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 48px 20px;
+            color: #aab0c5;
+            font-size: 16px;
+        }
+
+        .empty-message i {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 16px;
+            color: #d0d6e8;
+        }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #0f1a3d;
+            color: #fff;
+            padding: 16px 24px;
+            border-radius: 14px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 9999;
+            transform: translateX(120%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            max-width: 450px;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast i {
+            font-size: 22px;
+        }
+
+        .toast.success i { color: #4CAF50; }
+        .toast.error i { color: #ef5350; }
+        .toast.info i { color: #42a5f5; }
+        .toast.warning i { color: #ffca28; }
+
+        /* ===== FILE INPUT OCULTO ===== */
+        #fileInput {
+            display: none;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 992px) {
+            header {
+                padding: 22px 24px;
+            }
+
+            .header-left h1 {
+                font-size: 20px;
+            }
+
+            .header-left h1 span {
+                font-size: 13px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 12px;
+            }
+
+            header {
+                flex-direction: column;
+                text-align: center;
+                padding: 20px;
+            }
+
+            .header-left {
+                flex-direction: column;
+            }
+
+            .header-actions {
+                justify-content: center;
+                width: 100%;
+            }
+
+            .header-actions button {
+                font-size: 12px;
+                padding: 8px 14px;
+                flex: 1;
+                justify-content: center;
+                min-width: 60px;
+            }
+
+            .header-actions button span {
+                display: none;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+
+            .stat-card {
+                padding: 14px 16px;
+            }
+
+            .stat-info .number {
+                font-size: 20px;
+            }
+
+            .form-section {
+                padding: 20px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .filters {
+                flex-direction: column;
+                padding: 16px;
+            }
+
+            .filters .filter-group {
+                flex: 1 1 100%;
+                width: 100%;
+            }
+
+            .filters input,
+            .filters select {
+                width: 100%;
+            }
+
+            .table-wrapper {
+                border-radius: 12px;
+            }
+
+            thead th,
+            tbody td {
+                padding: 10px 12px;
+                font-size: 12px;
+            }
+
+            .qtd-input {
+                width: 54px;
+                padding: 4px 6px;
+                font-size: 12px;
+            }
+
+            .btn-update-qtd {
+                padding: 4px 8px;
+                font-size: 11px;
+            }
+
+            .actions-cell {
+                gap: 3px;
+            }
+
+            .btn-edit,
+            .btn-delete {
+                padding: 4px 10px;
+                font-size: 11px;
+            }
+
+            .toast {
+                bottom: 16px;
+                right: 16px;
+                left: 16px;
+                max-width: none;
+                font-size: 13px;
+                padding: 14px 18px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+
+            .stat-card {
+                padding: 12px;
+                gap: 10px;
+            }
+
+            .stat-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 16px;
+            }
+
+            .stat-info .number {
+                font-size: 18px;
+            }
+
+            .stat-info .label {
+                font-size: 11px;
+            }
+        }
+
+        /* ===== PRINT ===== */
+        @media print {
+            body {
+                background: #fff;
+                padding: 10px;
+            }
+
+            .header-actions,
+            .filters,
+            .form-section,
+            .btn-edit,
+            .btn-delete,
+            .btn-update-qtd,
+            .qtd-input,
+            .actions-cell,
+            .toast {
+                display: none !important;
+            }
+
+            .table-wrapper {
+                box-shadow: none;
+                border: 1px solid #ddd;
+                border-radius: 0;
+            }
+
+            thead {
+                background: #0f1a3d !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .stat-card {
+                box-shadow: none;
+                border: 1px solid #ddd;
+                background: #f9f9f9;
+            }
+
+            header {
+                background: #0f1a3d !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .stat-icon {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .categoria-badge {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- ===== HEADER ===== -->
+    <header>
+        <div class="header-left">
+            <div class="icon-box">
+                <i class="fas fa-warehouse"></i>
+            </div>
+            <div>
+                <h1>Estoque <span>Depósito • Gestão de Produtos</span></h1>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="btn-primary" onclick="abrirFormulario()">
+                <i class="fas fa-plus-circle"></i> <span>Novo</span>
+            </button>
+            <button class="btn-backup" onclick="exportarBackup()">
+                <i class="fas fa-download"></i> <span>Backup</span>
+            </button>
+            <button class="btn-restore" onclick="document.getElementById('fileInput').click()">
+                <i class="fas fa-upload"></i> <span>Restaurar</span>
+            </button>
+            <button class="btn-export" onclick="exportarCSV()">
+                <i class="fas fa-file-export"></i> <span>CSV</span>
+            </button>
+            <button class="btn-print" onclick="window.print()">
+                <i class="fas fa-print"></i> <span>Imprimir</span>
+            </button>
+            <button class="btn-danger" onclick="limparDados()">
+                <i class="fas fa-trash-alt"></i> <span>Limpar</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- ===== STATS ===== -->
+    <div class="stats">
+        <div class="stat-card">
+            <div class="stat-icon blue"><i class="fas fa-boxes"></i></div>
+            <div class="stat-info">
+                <div class="number" id="totalProdutos">0</div>
+                <div class="label">Total de Produtos</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green"><i class="fas fa-tags"></i></div>
+            <div class="stat-info">
+                <div class="number" id="totalCategorias">0</div>
+                <div class="label">Categorias</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon red"><i class="fas fa-exclamation-circle"></i></div>
+            <div class="stat-info">
+                <div class="number" id="totalVencidos">0</div>
+                <div class="label">Produtos Vencidos</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon orange"><i class="fas fa-clock"></i></div>
+            <div class="stat-info">
+                <div class="number" id="totalVencendo">0</div>
+                <div class="label">Vencem em 30 dias</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon purple"><i class="fas fa-history"></i></div>
+            <div class="stat-info">
+                <div class="number" id="totalAlteracoes">0</div>
+                <div class="label">Alterações Registradas</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== FORM ===== -->
+    <div class="form-section" id="formSection">
+        <div class="form-header">
+            <h2><i class="fas fa-plus-circle"></i> <span id="formTitle">Cadastrar Produto</span></h2>
+            <button class="btn-close-form" onclick="fecharFormulario()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="form-grid">
+            <div class="form-group">
+                <label><i class="fas fa-tag"></i> Nome do Produto *</label>
+                <input type="text" id="produtoNome" placeholder="Ex: Fralda Babysec">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-folder"></i> Categoria</label>
+                <select id="produtoCategoria">
+                    <option value="Lenço umedecido">Lenço umedecido</option>
+                    <option value="Papel higiênico">Papel higiênico</option>
+                    <option value="Fralda adulto">Fralda adulto</option>
+                    <option value="Fralda noturna">Fralda noturna</option>
+                    <option value="Fralda infantil">Fralda infantil</option>
+                    <option value="Medicamentos">Medicamentos</option>
+                    <option value="Materiais">Materiais</option>
+                    <option value="Outros">Outros</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-info-circle"></i> Especificação</label>
+                <input type="text" id="produtoEspecificacao" placeholder="Ex: 60 und">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-sort-numeric-up"></i> Quantidade *</label>
+                <input type="number" id="produtoQuantidade" placeholder="0" min="1">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-balance-scale"></i> Unidade</label>
+                <select id="produtoUnidade">
+                    <option value="pacotes">pacotes</option>
+                    <option value="fardos">fardos</option>
+                    <option value="garrafinhas">garrafinhas</option>
+                    <option value="sacos">sacos</option>
+                    <option value="unidades">unidades</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-calendar-alt"></i> Data de Validade</label>
+                <input type="date" id="produtoValidade">
+            </div>
+        </div>
+        <div class="form-actions">
+            <button class="btn-save" onclick="salvarProduto()"><i class="fas fa-save"></i> Salvar</button>
+            <button class="btn-cancel" onclick="fecharFormulario()"><i class="fas fa-times"></i> Cancelar</button>
+        </div>
+    </div>
+
+    <!-- ===== FILTERS ===== -->
+    <div class="filters">
+        <div class="filter-group filter-search">
+            <label><i class="fas fa-search"></i></label>
+            <input type="text" id="filtroBusca" placeholder="Buscar produto..." oninput="renderizarTabela()">
+        </div>
+        <div class="filter-group">
+            <label><i class="fas fa-folder-open"></i></label>
+            <select id="filtroCategoria" onchange="renderizarTabela()">
+                <option value="">Todas categorias</option>
+                <option value="Lenço umedecido">Lenço umedecido</option>
+                <option value="Papel higiênico">Papel higiênico</option>
+                <option value="Fralda adulto">Fralda adulto</option>
+                <option value="Fralda noturna">Fralda noturna</option>
+                <option value="Fralda infantil">Fralda infantil</option>
+                <option value="Medicamentos">Medicamentos</option>
+                <option value="Materiais">Materiais</option>
+                <option value="Outros">Outros</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label><i class="fas fa-hourglass-half"></i></label>
+            <select id="filtroValidade" onchange="renderizarTabela()">
+                <option value="">Todas validades</option>
+                <option value="vencido">Vencidos</option>
+                <option value="proximo">Vencem em 30 dias</option>
+                <option value="ok">Válidos</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- ===== TABLE ===== -->
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th><i class="fas fa-folder"></i> Categoria</th>
+                    <th><i class="fas fa-box"></i> Produto</th>
+                    <th><i class="fas fa-tag"></i> Especificação</th>
+                    <th><i class="fas fa-cubes"></i> Quantidade</th>
+                    <th><i class="fas fa-calendar-check"></i> Validade</th>
+                    <th style="text-align:center;"><i class="fas fa-cog"></i> Ações</th>
+                </tr>
+            </thead>
+            <tbody id="tabelaCorpo">
+                <!-- Renderizado via JS -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ===== FILE INPUT OCULTO ===== -->
+    <input type="file" id="fileInput" accept=".txt" onchange="importarBackup(event)">
+
+    <!-- ===== TOAST ===== -->
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMensagem">Mensagem</span>
+    </div>
+
+</div>
+
+<script>
+    // ===================== DADOS INICIAIS =====================
+    const dadosIniciais = [
+        { categoria: 'Lenço umedecido', produto: 'Panda Premium azul', especificacao: '120 und', quantidade: 5, unidade: 'pacotes', validade: '' },
+        { categoria: 'Lenço umedecido', produto: 'Personal Soft', especificacao: '50 und', quantidade: 13, unidade: 'pacotes', validade: '' },
+        { categoria: 'Lenço umedecido', produto: 'Pampers Carícia', especificacao: '48 und', quantidade: 8, unidade: 'pacotes', validade: '' },
+        { categoria: 'Lenço umedecido', produto: 'Pampers Camomila', especificacao: '48 und', quantidade: 3, unidade: 'pacotes', validade: '' },
+        { categoria: 'Lenço umedecido', produto: 'Bela Baby', especificacao: '140 und', quantidade: 2, unidade: 'pacotes', validade: '' },
+        { categoria: 'Lenço umedecido', produto: 'Huggies Higiene Diária', especificacao: '120 und', quantidade: 9, unidade: 'pacotes', validade: '' },
+        { categoria: 'Lenço umedecido', produto: 'Huggies Rosto e Corpo', especificacao: '48 und', quantidade: 7, unidade: 'pacotes', validade: '' },
+        { categoria: 'Lenço umedecido', produto: 'Huggies Recém-nascido', especificacao: '48 und', quantidade: 10, unidade: 'pacotes', validade: '' },
+        { categoria: 'Lenço umedecido', produto: 'Granado Lenço', especificacao: '50 und', quantidade: 25, unidade: 'pacotes', validade: '' },
+        { categoria: 'Lenço umedecido', produto: 'Piquitucho', especificacao: '120 und', quantidade: 10, unidade: 'pacotes', validade: '' },
+        { categoria: 'Lenço umedecido', produto: 'Clinoff azul', especificacao: '100 und', quantidade: 7, unidade: 'pacotes', validade: '' },
+        { categoria: 'Lenço umedecido', produto: 'Babysec Lenço', especificacao: '48 und', quantidade: 7, unidade: 'pacotes', validade: '' },
+        { categoria: 'Lenço umedecido', produto: 'Isababy 97% água', especificacao: '100 und', quantidade: 34, unidade: 'pacotes', validade: '' },
+        { categoria: 'Lenço umedecido', produto: 'Isababy normal', especificacao: '100 und', quantidade: 64, unidade: 'pacotes', validade: '' },
+        { categoria: 'Lenço umedecido', produto: 'Isababy verde', especificacao: '140 und', quantidade: 51, unidade: 'pacotes', validade: '' },
+        { categoria: 'Lenço umedecido', produto: 'Mili Lenço', especificacao: '96 und', quantidade: 61, unidade: 'pacotes', validade: '' },
+        { categoria: 'Papel higiênico', produto: 'Deluxe Cotton', especificacao: '6 und/pct • 6 pct/fardo', quantidade: 11, unidade: 'fardos', validade: '' },
+        { categoria: 'Fralda adulto', produto: 'Mili adulto pants G/XG', especificacao: '16 und', quantidade: 8, unidade: 'pacotes', validade: '' },
+        { categoria: 'Fralda adulto', produto: 'Mili adulto pants P/M', especificacao: '16 und', quantidade: 16, unidade: 'pacotes', validade: '' },
+        { categoria: 'Fralda adulto', produto: 'Plenitud Femme P/M', especificacao: '16 und', quantidade: 1, unidade: 'pacotes', validade: '' },
+        { categoria: 'Fralda adulto', produto: 'Plenitud Femme G/XG', especificacao: '16 und', quantidade: 1, unidade: 'pacotes', validade: '' },
+        { categoria: 'Fralda adulto', produto: 'Plenitud Plus 24 P/M', especificacao: '24 und', quantidade: 1, unidade: 'pacotes', validade: '' },
+        { categoria: 'Fralda adulto', produto: 'Lifree P/M unissex', especificacao: '16 und', quantidade: 4, unidade: 'pacotes', validade: '' },
+        { categoria: 'Fralda adulto', produto: 'Plenitud Plus Fit P/M', especificacao: '16 und', quantidade: 4, unidade: 'pacotes', validade: '' },
+        { categoria: 'Fralda adulto', produto: 'Plenitud Plus Fit G/XG', especificacao: '16 und', quantidade: 4, unidade: 'pacotes', validade: '' },
+        { categoria: 'Fralda adulto', produto: 'Bigfral Derma Plus XG', especificacao: '14 und', quantidade: 5, unidade: 'pacotes', validade: '' },
+        { categoria: 'Fralda adulto', produto: 'Bigfral Absorvente (tam. único)', especificacao: '20 und', quantidade: 2, unidade: 'pacotes', validade: '' },
+        { categoria: 'Fralda adulto', produto: 'Bigfral Moviment G/XG', especificacao: '7 und', quantidade: 8, unidade: 'pacotes', validade: '' },
+        { categoria: 'Fralda adulto', produto: 'Bigfral Moviment P/M', especificacao: '7 und', quantidade: 8, unidade: 'pacotes', validade: '' },
+        { categoria: 'Fralda adulto', produto: 'Bigfral Derma Plus M', especificacao: '18 und', quantidade: 1, unidade: 'pacotes', validade: '' },
+        { categoria: 'Fralda adulto', produto: 'Bigfral Derma Plus G', especificacao: '16 und', quantidade: 11, unidade: 'pacotes', validade: '' },
+        { categoria: 'Fralda noturna', produto: 'Tena G/EG', especificacao: '7 und', quantidade: 9, unidade: 'pacotes', validade: '' },
+        { categoria: 'Fralda noturna', produto: 'Tena G/EG', especificacao: '16 und', quantidade: 10, unidade: 'pacotes', validade: '' },
+        { categoria: 'Medicamentos', produto: 'Soro fisiológico', especificacao: '500 ml', quantidade: 48, unidade: 'garrafinhas', validade: '' },
+        { categoria: 'Materiais', produto: 'Coletor universal', especificacao: '100 und/saco', quantidade: 3, unidade: 'sacos', validade: '' },
+        { categoria: 'Fralda infantil', produto: 'Babysec Shortinho M', especificacao: '60 und', quantidade: 32, unidade: 'pacotes', validade: '' },
+        { categoria: 'Fralda infantil', produto: 'Babysec Shortinho G', especificacao: '48 und', quantidade: 12, unidade: 'pacotes', validade: '' },
+        { categoria: 'Fralda infantil', produto: 'Babysec Shortinho XXXG', especificacao: '32 und', quantidade: 40, unidade: 'pacotes', validade: '' },
+        { categoria: 'Fralda infantil', produto: 'Babysec Shortinho XXG', especificacao: '42 und', quantidade: 12, unidade: 'pacotes', validade: '' },
+        { categoria: 'Fralda infantil', produto: 'Babysec Shortinho XG', especificacao: '42 und', quantidade: 22, unidade: 'pacotes', validade: '' },
+        { categoria: 'Fralda infantil', produto: 'Mili Giga M', especificacao: '80 und', quantidade: 3, unidade: 'pacotes', validade: '' },
+        { categoria: 'Fralda infantil', produto: 'Mili Giga G', especificacao: '72 und', quantidade: 2, unidade: 'pacotes', validade: '' },
+        { categoria: 'Fralda infantil', produto: 'Mili Giga XG', especificacao: '62 und', quantidade: 2, unidade: 'pacotes', validade: '' },
+        { categoria: 'Fralda infantil', produto: 'Mili Mega XXG', especificacao: '28 und', quantidade: 3, unidade: 'pacotes', validade: '' },
+        { categoria: 'Fralda infantil', produto: 'Mili Mega G', especificacao: '36 und', quantidade: 12, unidade: 'pacotes', validade: '' }
+    ];
+
+    // ===================== VARIÁVEIS GLOBAIS =====================
+    let produtos = [];
+    let editandoId = null;
+    let historicoAlteracoes = [];
+
+    // ===================== FUNÇÕES PRINCIPAIS =====================
+    function carregarDados() {
+        const dados = localStorage.getItem('estoqueProdutos');
+        const historico = localStorage.getItem('estoqueHistorico');
+        
+        if (dados) {
+            produtos = JSON.parse(dados);
+        } else {
+            produtos = JSON.parse(JSON.stringify(dadosIniciais));
+            salvarDados();
+        }
+
+        if (historico) {
+            historicoAlteracoes = JSON.parse(historico);
+        } else {
+            historicoAlteracoes = [];
+            // Registrar carga inicial
+            registrarAlteracao('SISTEMA', 'Carga inicial dos dados', produtos.length, '');
+        }
+
+        renderizarTabela();
+        atualizarStats();
+    }
+
+    function salvarDados() {
+        localStorage.setItem('estoqueProdutos', JSON.stringify(produtos));
+        localStorage.setItem('estoqueHistorico', JSON.stringify(historicoAlteracoes));
+        renderizarTabela();
+        atualizarStats();
+    }
+
+    function registrarAlteracao(acao, descricao, quantidade, detalhes) {
+        const agora = new Date();
+        const dataHora = agora.toLocaleString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+
+        historicoAlteracoes.push({
+            data: dataHora,
+            acao: acao,
+            descricao: descricao,
+            quantidade: quantidade,
+            detalhes: detalhes || ''
+        });
+
+        // Manter apenas os últimos 500 registros
+        if (historicoAlteracoes.length > 500) {
+            historicoAlteracoes = historicoAlteracoes.slice(-500);
+        }
+
+        salvarDados();
+    }
+
+    // ===================== BACKUP (TXT) =====================
+    function exportarBackup() {
+        const dados = {
+            produtos: produtos,
+            historico: historicoAlteracoes,
+            dataExportacao: new Date().toLocaleString('pt-BR'),
+            versao: '1.0',
+            totalProdutos: produtos.length,
+            totalAlteracoes: historicoAlteracoes.length
+        };
+
+        const conteudo = JSON.stringify(dados, null, 2);
+        const blob = new Blob([conteudo], { type: 'text/plain;charset=utf-8' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        
+        const data = new Date();
+        const nomeArquivo = `backup_estoque_${data.getFullYear()}-${String(data.getMonth()+1).padStart(2,'0')}-${String(data.getDate()).padStart(2,'0')}_${String(data.getHours()).padStart(2,'0')}h${String(data.getMinutes()).padStart(2,'0')}.txt`;
+        link.download = nomeArquivo;
+        link.click();
+        
+        registrarAlteracao('BACKUP', 'Backup exportado', produtos.length, `Arquivo: ${nomeArquivo}`);
+        mostrarToast('✅ Backup exportado com sucesso!', 'success');
+        
+        URL.revokeObjectURL(link.href);
+    }
+
+    function importarBackup(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const conteudo = e.target.result;
+                const dados = JSON.parse(conteudo);
+
+                // Validar estrutura do backup
+                if (!dados.produtos || !Array.isArray(dados.produtos)) {
+                    mostrarToast('❌ Arquivo inválido! Estrutura de dados incorreta.', 'error');
+                    return;
+                }
+
+                // Confirmar restauração
+                if (!confirm(`⚠️ Deseja restaurar o backup de ${dados.dataExportacao || 'data desconhecida'}?\n\n📦 ${dados.produtos.length} produtos\n📝 ${dados.historico ? dados.historico.length : 0} registros de alterações\n\nOs dados atuais serão substituídos!`)) {
+                    return;
+                }
+
+                // Restaurar dados
+                produtos = dados.produtos;
+                if (dados.historico) {
+                    historicoAlteracoes = dados.historico;
+                } else {
+                    historicoAlteracoes = [];
+                }
+
+                registrarAlteracao('RESTAURACAO', 'Backup restaurado', produtos.length, `Arquivo: ${file.name} | Data backup: ${dados.dataExportacao || 'N/A'}`);
+                salvarDados();
+                mostrarToast('✅ Backup restaurado com sucesso!', 'success');
+                renderizarTabela();
+                atualizarStats();
+
+            } catch (error) {
+                mostrarToast('❌ Erro ao ler o arquivo. Certifique-se que é um backup válido.', 'error');
+                console.error('Erro ao importar backup:', error);
+            }
+        };
+
+        reader.readAsText(file);
+        // Resetar o input para permitir selecionar o mesmo arquivo novamente
+        event.target.value = '';
+    }
+
+    // ===================== TOAST =====================
+    function mostrarToast(mensagem, tipo = 'info') {
+        const toast = document.getElementById('toast');
+        const msg = document.getElementById('toastMensagem');
+        const icon = toast.querySelector('i');
+
+        // Resetar classes
+        toast.className = 'toast';
+        icon.className = '';
+
+        // Aplicar tipo
+        if (tipo === 'success') {
+            icon.className = 'fas fa-check-circle';
+            toast.classList.add('success');
+        } else if (tipo === 'error') {
+            icon.className = 'fas fa-exclamation-circle';
+            toast.classList.add('error');
+        } else if (tipo === 'warning') {
+            icon.className = 'fas fa-exclamation-triangle';
+            toast.classList.add('warning');
+        } else {
+            icon.className = 'fas fa-info-circle';
+            toast.classList.add('info');
+        }
+
+        msg.textContent = mensagem;
+        toast.classList.add('show');
+
+        clearTimeout(toast.timeout);
+        toast.timeout = setTimeout(() => {
+            toast.classList.remove('show');
+        }, 4000);
+    }
+
+    // ===================== TABELA =====================
+    function renderizarTabela() {
+        const corpo = document.getElementById('tabelaCorpo');
+        const busca = document.getElementById('filtroBusca').value.toLowerCase();
+        const categoria = document.getElementById('filtroCategoria').value;
+        const validadeFiltro = document.getElementById('filtroValidade').value;
+
+        let filtrados = produtos.filter(p => {
+            const matchBusca = p.produto.toLowerCase().includes(busca) || p.categoria.toLowerCase().includes(busca);
+            const matchCategoria = categoria === '' || p.categoria === categoria;
+            const status = getStatusValidade(p.validade);
+            let matchValidade = true;
+            if (validadeFiltro === 'vencido') matchValidade = status === 'vencido';
+            else if (validadeFiltro === 'proximo') matchValidade = status === 'proximo';
+            else if (validadeFiltro === 'ok') matchValidade = status === 'ok' || status === 'sem';
+            return matchBusca && matchCategoria && matchValidade;
+        });
+
+        if (filtrados.length === 0) {
+            corpo.innerHTML = `
+                <tr>
+                    <td colspan="6">
+                        <div class="empty-message">
+                            <i class="fas fa-box-open"></i>
+                            Nenhum produto encontrado
+                            <div style="font-size:14px;color:#c0c6dc;margin-top:6px;">Tente ajustar os filtros ou cadastre um novo produto</div>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        corpo.innerHTML = filtrados.map((p, index) => {
+            const status = getStatusValidade(p.validade);
+            let validadeHtml = p.validade ? formatarData(p.validade) : '—';
+            let classeValidade = 'validade-sem';
+            let iconeValidade = '<i class="fas fa-minus-circle"></i>';
+
+            if (status === 'vencido') {
+                classeValidade = 'validade-vencida';
+                iconeValidade = '<i class="fas fa-times-circle"></i>';
+            } else if (status === 'proximo') {
+                classeValidade = 'validade-proxima';
+                iconeValidade = '<i class="fas fa-exclamation-triangle"></i>';
+            } else if (status === 'ok') {
+                classeValidade = 'validade-ok';
+                iconeValidade = '<i class="fas fa-check-circle"></i>';
+            }
+
+            return `
+                <tr>
+                    <td><span class="categoria-badge">${p.categoria}</span></td>
+                    <td><span class="produto-nome">${p.produto}</span></td>
+                    <td>${p.especificacao}</td>
+                    <td>
+                        <div class="qtd-wrapper">
+                            <input type="number" class="qtd-input" id="qtd_${index}" value="${p.quantidade}" min="1">
+                            <button class="btn-update-qtd" onclick="atualizarQuantidade(${index})"><i class="fas fa-check"></i></button>
+                            <span class="unidade-label">${p.unidade}</span>
+                        </div>
+                    </td>
+                    <td class="${classeValidade}">${iconeValidade} ${validadeHtml}</td>
+                    <td>
+                        <div class="actions-cell">
+                            <button class="btn-edit" onclick="editarProduto(${index})"><i class="fas fa-edit"></i></button>
+                            <button class="btn-delete" onclick="deletarProduto(${index})"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function getStatusValidade(data) {
+        if (!data) return 'sem';
+        const hoje = new Date();
+        hoje.setHours(0,0,0,0);
+        const validade = new Date(data);
+        validade.setHours(0,0,0,0);
+        const diff = Math.ceil((validade - hoje) / (1000 * 60 * 60 * 24));
+        if (diff < 0) return 'vencido';
+        if (diff <= 30) return 'proximo';
+        return 'ok';
+    }
+
+    function formatarData(data) {
+        const d = new Date(data);
+        return d.toLocaleDateString('pt-BR');
+    }
+
+    function atualizarQuantidade(index) {
+        const input = document.getElementById(`qtd_${index}`);
+        if (!input) return;
+        const novaQtd = parseInt(input.value);
+        if (isNaN(novaQtd) || novaQtd < 1) {
+            mostrarToast('⚠️ Digite uma quantidade válida (mínimo 1)', 'warning');
+            return;
+        }
+        const busca = document.getElementById('filtroBusca').value.toLowerCase();
+        const categoria = document.getElementById('filtroCategoria').value;
+        const validadeFiltro = document.getElementById('filtroValidade').value;
+        let filtrados = produtos.filter(p => {
+            const matchBusca = p.produto.toLowerCase().includes(busca) || p.categoria.toLowerCase().includes(busca);
+            const matchCategoria = categoria === '' || p.categoria === categoria;
+            const status = getStatusValidade(p.validade);
+            let matchValidade = true;
+            if (validadeFiltro === 'vencido') matchValidade = status === 'vencido';
+            else if (validadeFiltro === 'proximo') matchValidade = status === 'proximo';
+            else if (validadeFiltro === 'ok') matchValidade = status === 'ok' || status === 'sem';
+            return matchBusca && matchCategoria && matchValidade;
+        });
+        if (index >= filtrados.length) return;
+        const produtoFiltrado = filtrados[index];
+        const idOriginal = produtos.findIndex(p => 
+            p.produto === produtoFiltrado.produto && 
+            p.categoria === produtoFiltrado.categoria &&
+            p.especificacao === produtoFiltrado.especificacao
+        );
+        if (idOriginal !== -1) {
+            const qtdAntiga = produtos[idOriginal].quantidade;
+            produtos[idOriginal].quantidade = novaQtd;
+            registrarAlteracao('QUANTIDADE', `Alteração de quantidade: ${produtos[idOriginal].produto}`, novaQtd, `${qtdAntiga} → ${novaQtd} ${produtos[idOriginal].unidade}`);
+            salvarDados();
+            mostrarToast(`✅ Quantidade atualizada: ${novaQtd} ${produtos[idOriginal].unidade}`, 'success');
+        }
+    }
+
+    // ===================== FORMULÁRIO =====================
+    function abrirFormulario(produto = null, index = null) {
+        document.getElementById('formSection').classList.add('active');
+        if (produto) {
+            document.getElementById('formTitle').textContent = '✏️ Editar Produto';
+            document.getElementById('produtoNome').value = produto.produto;
+            document.getElementById('produtoCategoria').value = produto.categoria;
+            document.getElementById('produtoEspecificacao').value = produto.especificacao;
+            document.getElementById('produtoQuantidade').value = produto.quantidade;
+            document.getElementById('produtoUnidade').value = produto.unidade;
+            document.getElementById('produtoValidade').value = produto.validade || '';
+            editandoId = index;
+        } else {
+            document.getElementById('formTitle').textContent = '➕ Cadastrar Novo Produto';
+            document.getElementById('produtoNome').value = '';
+            document.getElementById('produtoCategoria').value = 'Lenço umedecido';
+            document.getElementById('produtoEspecificacao').value = '';
+            document.getElementById('produtoQuantidade').value = '';
+            document.getElementById('produtoUnidade').value = 'pacotes';
+            document.getElementById('produtoValidade').value = '';
+            editandoId = null;
+        }
+        document.getElementById('formSection').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function fecharFormulario() {
+        document.getElementById('formSection').classList.remove('active');
+        editandoId = null;
+    }
+
+    function salvarProduto() {
+        const nome = document.getElementById('produtoNome').value.trim();
+        const categoria = document.getElementById('produtoCategoria').value;
+        const especificacao = document.getElementById('produtoEspecificacao').value.trim();
+        const quantidade = parseInt(document.getElementById('produtoQuantidade').value);
+        const unidade = document.getElementById('produtoUnidade').value;
+        const validade = document.getElementById('produtoValidade').value;
+
+        if (!nome || !quantidade || quantidade < 1) {
+            mostrarToast('⚠️ Preencha o Nome e a Quantidade corretamente!', 'warning');
+            return;
+        }
+
+        const novoProduto = { categoria, produto: nome, especificacao, quantidade, unidade, validade };
+
+        if (editandoId !== null) {
+            const produtoAntigo = produtos[editandoId];
+            registrarAlteracao('EDICAO', `Produto editado: ${nome}`, quantidade, 
+                `Antigo: ${produtoAntigo.produto} (${produtoAntigo.quantidade} ${produtoAntigo.unidade}) → Novo: ${nome} (${quantidade} ${unidade})`);
+            produtos[editandoId] = novoProduto;
+            mostrarToast('✅ Produto atualizado com sucesso!', 'success');
+        } else {
+            produtos.push(novoProduto);
+            registrarAlteracao('CADASTRO', `Novo produto cadastrado: ${nome}`, quantidade, `${quantidade} ${unidade} | Cat: ${categoria}`);
+            mostrarToast('✅ Produto cadastrado com sucesso!', 'success');
+        }
+
+        salvarDados();
+        fecharFormulario();
+    }
+
+    function editarProduto(index) {
+        const busca = document.getElementById('filtroBusca').value.toLowerCase();
+        const categoria = document.getElementById('filtroCategoria').value;
+        const validadeFiltro = document.getElementById('filtroValidade').value;
+        let filtrados = produtos.filter(p => {
+            const matchBusca = p.produto.toLowerCase().includes(busca) || p.categoria.toLowerCase().includes(busca);
+            const matchCategoria = categoria === '' || p.categoria === categoria;
+            const status = getStatusValidade(p.validade);
+            let matchValidade = true;
+            if (validadeFiltro === 'vencido') matchValidade = status === 'vencido';
+            else if (validadeFiltro === 'proximo') matchValidade = status === 'proximo';
+            else if (validadeFiltro === 'ok') matchValidade = status === 'ok' || status === 'sem';
+            return matchBusca && matchCategoria && matchValidade;
+        });
+        if (index >= filtrados.length) return;
+        const produtoFiltrado = filtrados[index];
+        const idOriginal = produtos.findIndex(p => 
+            p.produto === produtoFiltrado.produto && 
+            p.categoria === produtoFiltrado.categoria &&
+            p.especificacao === produtoFiltrado.especificacao
+        );
+        if (idOriginal !== -1) {
+            abrirFormulario(produtos[idOriginal], idOriginal);
+        }
+    }
+
+    function deletarProduto(index) {
+        if (!confirm('⚠️ Tem certeza que deseja excluir este produto?')) return;
+        const busca = document.getElementById('filtroBusca').value.toLowerCase();
+        const categoria = document.getElementById('filtroCategoria').value;
+        const validadeFiltro = document.getElementById('filtroValidade').value;
+        let filtrados = produtos.filter(p => {
+            const matchBusca = p.produto.toLowerCase().includes(busca) || p.categoria.toLowerCase().includes(busca);
+            const matchCategoria = categoria === '' || p.categoria === categoria;
+            const status = getStatusValidade(p.validade);
+            let matchValidade = true;
+            if (validadeFiltro === 'vencido') matchValidade = status === 'vencido';
+            else if (validadeFiltro === 'proximo') matchValidade = status === 'proximo';
+            else if (validadeFiltro === 'ok') matchValidade = status === 'ok' || status === 'sem';
+            return matchBusca && matchCategoria && matchValidade;
+        });
+        if (index >= filtrados.length) return;
+        const produtoFiltrado = filtrados[index];
+        const idOriginal = produtos.findIndex(p => 
+            p.produto === produtoFiltrado.produto && 
+            p.categoria === produtoFiltrado.categoria &&
+            p.especificacao === produtoFiltrado.especificacao
+        );
+        if (idOriginal !== -1) {
+            const produtoRemovido = produtos[idOriginal];
+            produtos.splice(idOriginal, 1);
+            registrarAlteracao('EXCLUSAO', `Produto excluído: ${produtoRemovido.produto}`, 0, `${produtoRemovido.quantidade} ${produtoRemovido.unidade} | Cat: ${produtoRemovido.categoria}`);
+            salvarDados();
+            mostrarToast(`🗑️ Produto "${produtoRemovido.produto}" removido`, 'info');
+        }
+    }
+
+    // ===================== ESTATÍSTICAS =====================
+    function atualizarStats() {
+        const total = produtos.length;
+        const categorias = new Set(produtos.map(p => p.categoria));
+        const vencidos = produtos.filter(p => getStatusValidade(p.validade) === 'vencido').length;
+        const vencendo = produtos.filter(p => getStatusValidade(p.validade) === 'proximo').length;
+
+        document.getElementById('totalProdutos').textContent = total;
+        document.getElementById('totalCategorias').textContent = categorias.size;
+        document.getElementById('totalVencidos').textContent = vencidos;
+        document.getElementById('totalVencendo').textContent = vencendo;
+        document.getElementById('totalAlteracoes').textContent = historicoAlteracoes.length;
+    }
+
+    // ===================== EXPORTAR CSV =====================
+    function exportarCSV() {
+        let csv = 'Categoria,Produto,Especificação,Quantidade,Unidade,Validade\n';
+        produtos.forEach(p => {
+            csv += `"${p.categoria}","${p.produto}","${p.especificacao}",${p.quantidade},"${p.unidade}","${p.validade || ''}"\n`;
+        });
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'estoque.csv';
+        link.click();
+        mostrarToast('📤 CSV exportado com sucesso!', 'success');
+    }
+
+    // ===================== LIMPAR DADOS =====================
+    function limparDados() {
+        if (!confirm('⚠️ Tem certeza? Isso vai apagar TODOS os produtos cadastrados!')) return;
+        if (!confirm('🔄 Última confirmação: Deseja realmente limpar tudo?')) return;
+        produtos = [];
+        historicoAlteracoes = [];
+        registrarAlteracao('LIMPEZA', 'Todos os dados foram limpos', 0, '');
+        salvarDados();
+        mostrarToast('🗑️ Todos os produtos foram removidos!', 'warning');
+    }
+
+    // ===================== INICIALIZAR =====================
+    carregarDados();
+</script>
+
+</body>
+</html>
